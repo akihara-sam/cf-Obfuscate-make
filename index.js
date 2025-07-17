@@ -1,7 +1,7 @@
 //nat64自动填充proxyip，无需且不支持proxyip设置
 import { connect } from "cloudflare:sockets";
 const WS_READY_STATE_OPEN = 1;
-let userID = "86c50e3a-5b87-49dd-bd20-03c7f2735e40";
+let userID = "5c420325-cbfe-4f63-a2f5-b357f9e0b5ad";
 const cn_hostnames = [""];
 // 添加需要直接使用NAT64的域名列表，支持从环境变量扩展
 let proxydomains = ["twitch.tv","ttvnw.net"];
