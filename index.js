@@ -100,20 +100,18 @@ export default {
    * @returns {Promise<Response>}
    */
   async fetch(request, env, ctx) {
+    //  ==== 修正：将所有逻辑都包裹在 try...catch 中 ====
     try {
       userID = env.uuid || userID;
       CDNIP = env.cdnip || CDNIP;
-      // 处理环境变量中的 proxydomains
+
       if (env.proxydomains) {
         try {
-          // 尝试解析环境变量中的 JSON 数组
           const envDomains = JSON.parse(env.proxydomains);
           if (Array.isArray(envDomains)) {
-            // 合并环境变量中的域名和默认域名，去重
             proxydomains = [...new Set([...proxydomains, ...envDomains])];
           }
         } catch (e) {
-          // 如果不是 JSON 数组，尝试按逗号分割
           const envDomains = env.proxydomains.split(',').map(d => d.trim()).filter(d => d);
           proxydomains = [...new Set([...proxydomains, ...envDomains])];
         }
@@ -144,147 +142,82 @@ export default {
       PT11 = env.pt11 || PT11;
       PT12 = env.pt12 || PT12;
       PT13 = env.pt13 || PT13;
+
       const upgradeHeader = request.headers.get("Upgrade");
       const url = new URL(request.url);
 
-	    
-      
-      // 如果是 WebSocket 升级请求，直接交给代理处理
       if (upgradeHeader && upgradeHeader === "websocket") {
         return await handlevlessWebSocket(request);
       }
       
-      // ===== 主要修改在这里 =====
-      // 如果访问的是根路径，就执行随机重定向
       if (url.pathname === '/') {
-        // 从 redirectUrls 数组中随机选择一个 URL
         const randomIndex = Math.floor(Math.random() * redirectUrls.length);
         const targetUrl = redirectUrls[randomIndex];
-        // 返回一个 302 临时重定向响应
         return Response.redirect(targetUrl, 302);
       }
-      // ===== 修改结束 =====
 
-      // 对于非根路径的 HTTP 请求，保留原来的逻辑	      
-        switch (url.pathname) {
-          case `/${userID}`: {
-            const vlessConfig = getvlessConfig(
-              userID,
-              request.headers.get("Host")
-            );
-            return new Response(`${vlessConfig}`, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html;charset=utf-8",
-              },
-            });
-          }
-          case `/${userID}/ty`: {
-            const tyConfig = gettyConfig(userID, request.headers.get("Host"));
-            return new Response(`${tyConfig}`, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-              },
-            });
-          }
-          case `/${userID}/cl`: {
+      switch (url.pathname) {
+        case `/${userID}`: {
+          const vlessConfig = getvlessConfig(
+            userID,
+            request.headers.get("Host")
+          );
+          return new Response(`${vlessConfig}`, {
+            status: 200,
+            headers: { "Content-Type": "text/html;charset=utf-8" },
+          });
+        }
+        case `/${userID}/ty`: {
+          const tyConfig = gettyConfig(userID, request.headers.get("Host"));
+          return new Response(`${tyConfig}`, {
+            status: 200,
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+          });
+        }
+        case `/${userID}/cl`: {
             const clConfig = getclConfig(userID, request.headers.get("Host"));
             return new Response(`${clConfig}`, {
               status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-              },
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
             });
-          }
-          case `/${userID}/sb`: {
+        }
+        case `/${userID}/sb`: {
             const sbConfig = getsbConfig(userID, request.headers.get("Host"));
             return new Response(`${sbConfig}`, {
               status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-              },
+              headers: { "Content-Type": "application/json;charset=utf-8" },
             });
-          }
-          case `/${userID}/pty`: {
+        }
+        case `/${userID}/pty`: {
             const ptyConfig = getptyConfig(userID, request.headers.get("Host"));
             return new Response(`${ptyConfig}`, {
               status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-              },
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
             });
-          }
-          case `/${userID}/pcl`: {
+        }
+        case `/${userID}/pcl`: {
             const pclConfig = getpclConfig(userID, request.headers.get("Host"));
             return new Response(`${pclConfig}`, {
               status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-              },
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
             });
-          }
-          case `/${userID}/psb`: {
+        }
+        case `/${userID}/psb`: {
             const psbConfig = getpsbConfig(userID, request.headers.get("Host"));
             return new Response(`${psbConfig}`, {
               status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-              },
+              headers: { "Content-Type": "application/json;charset=utf-8" },
             });
-          }
-          default:
-            // return new Response('Not found', { status: 404 });
-            // For any other path, reverse proxy to 'ramdom website' and return the original response, caching it in the process
-            if (cn_hostnames.includes("")) {
-              return new Response(JSON.stringify(request.cf, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                },
-              });
-            }
-            const randomHostname =
-              cn_hostnames[Math.floor(Math.random() * cn_hostnames.length)];
-            const newHeaders = new Headers(request.headers);
-            newHeaders.set("cf-connecting-ip", "1.2.3.4");
-            newHeaders.set("x-forwarded-for", "1.2.3.4");
-            newHeaders.set("x-real-ip", "1.2.3.4");
-            newHeaders.set(
-              "referer",
-              "https://www.google.com/search?q=edtunnel"
-            );
-            // Use fetch to proxy the request to 15 different domains
-            const proxyUrl =
-              "https://" + randomHostname + url.pathname + url.search;
-            let modifiedRequest = new Request(proxyUrl, {
-              method: request.method,
-              headers: newHeaders,
-              body: request.body,
-              redirect: "manual",
-            });
-            const proxyResponse = await fetch(modifiedRequest, {
-              redirect: "manual",
-            });
-            // Check for 302 or 301 redirect status and return an error response
-            if ([301, 302].includes(proxyResponse.status)) {
-              return new Response(
-                `Redirects to ${randomHostname} are not allowed.`,
-                {
-                  status: 403,
-                  statusText: "Forbidden",
-                }
-              );
-            }
-            // Return the response from the proxy server
-            return proxyResponse;
         }
+        default:
+          return new Response('Not found', { status: 404 });
       }
-      return await handlevlessWebSocket(request);
+    // ==== 修正：这里是补上的 catch 块 ====
     } catch (err) {
       /** @type {Error} */ let e = err;
       return new Response(e.toString());
     }
+    // ==== 修正结束 ====
   },
 };
 
