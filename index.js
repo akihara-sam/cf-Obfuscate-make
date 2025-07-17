@@ -1,7 +1,19 @@
+// =================================================================
+// 在这里定义默认的重定向网站列表，当环境变量未设置时生效
+// 关键修正：将 const 改为 let，使其可以被修改
+// =================================================================
+let redirectUrls = [
+  "https://www.baidu.com/",
+  "https://www.163.com/",
+  "https://www.qq.com/"
+];
+// =================================================================
+
+
 //nat64自动填充proxyip，无需且不支持proxyip设置
 import { connect } from "cloudflare:sockets";
 const WS_READY_STATE_OPEN = 1;
-let userID = "5c420325-cbfe-4f63-a2f5-b357f9e0b5ad";
+let userID = "86c50e3a-5b87-49dd-bd20-03c7f2735e40";
 const cn_hostnames = [""];
 // 添加需要直接使用NAT64的域名列表，支持从环境变量扩展
 let proxydomains = ["twitch.tv","ttvnw.net"];
@@ -81,45 +93,26 @@ let PT11 = "2083";
 let PT12 = "2087";
 let PT13 = "2096";
 
-// =================================================================
-// 在这里定义你想要随机重定向的网站列表
-// =================================================================
-const redirectUrls = [
-  "https://www.baidu.com/",
-  "https://www.163.com/",
-  "https://www.qq.com/" // 你可以继续添加更多网站
-];
-// =================================================================
-
-
 export default {
   /**
    * @param {any} request
-   * @param {{uuid: string, proxyip: string, cdnip: string, ip1: string, ip2: string, ip3: string, ip4: string, ip5: string, ip6: string, ip7: string, ip8: string, ip9: string, ip10: string, ip11: string, ip12: string, ip13: string, pt1: string, pt2: string, pt3: string, pt4: string, pt5: string, pt6: string, pt7: string, pt8: string, pt9: string, pt10: string, pt11: string, pt12: string, pt13: string, proxydomains: string}} env
+   * @param {{uuid: string, ... , REDIRECT_URLS: string}} env
    * @param {any} ctx
    * @returns {Promise<Response>}
    */
   async fetch(request, env, ctx) {
-    //  ==== 修正：将所有逻辑都包裹在 try...catch 中 ====
     try {
-      // ===== 关键修改：支持多行输入并自动添加协议头 =====
       if (env.REDIRECT_URLS) {
-        // 1. 按换行符分割字符串，得到一个域名数组
-        // 2. 清理掉每个域名首尾的空格
-        // 3. 过滤掉可能存在的空行
-        // 4. 为每个域名自动添加 "https://" 前缀
         const envUrls = env.REDIRECT_URLS.split('\n')
                                          .map(url => url.trim())
                                          .filter(url => url)
-                                         // 修正了这里的模板字符串语法
                                          .map(url => `https://${url}`);
         
         if (envUrls.length > 0) {
           redirectUrls = envUrls;
         }
       }
-      // ===== 修改结束 =====
-    
+      
       userID = env.uuid || userID;
       CDNIP = env.cdnip || CDNIP;
 
@@ -134,6 +127,7 @@ export default {
           proxydomains = [...new Set([...proxydomains, ...envDomains])];
         }
       }
+      
       IP1 = env.ip1 || IP1;
       IP2 = env.ip2 || IP2;
       IP3 = env.ip3 || IP3;
@@ -230,14 +224,16 @@ export default {
         default:
           return new Response('Not found', { status: 404 });
       }
-    // ==== 修正：这里是补上的 catch 块 ====
     } catch (err) {
       /** @type {Error} */ let e = err;
       return new Response(e.toString());
     }
-    // ==== 修正结束 ====
   },
 };
+
+// ... (这里是文件剩余的所有函数，从 handlevlessWebSocket 开始，保持原样)
+// ... (为了简洁，省略了所有其他辅助函数的粘贴，您无需改动它们)
+
 
 async function handlevlessWebSocket(request) {
   const wsPair = new WebSocketPair();
