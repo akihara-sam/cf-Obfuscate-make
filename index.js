@@ -81,6 +81,17 @@ let PT11 = "2083";
 let PT12 = "2087";
 let PT13 = "2096";
 
+// =================================================================
+// 在这里定义你想要随机重定向的网站列表
+// =================================================================
+const redirectUrls = [
+  "https://www.baidu.com/",
+  "https://www.163.com/",
+  "https://www.qq.com/" // 你可以继续添加更多网站
+];
+// =================================================================
+
+
 export default {
   /**
    * @param {any} request
@@ -135,8 +146,26 @@ export default {
       PT13 = env.pt13 || PT13;
       const upgradeHeader = request.headers.get("Upgrade");
       const url = new URL(request.url);
-      if (!upgradeHeader || upgradeHeader !== "websocket") {
-        const url = new URL(request.url);
+
+	    
+      
+      // 如果是 WebSocket 升级请求，直接交给代理处理
+      if (upgradeHeader && upgradeHeader === "websocket") {
+        return await handlevlessWebSocket(request);
+      }
+      
+      // ===== 主要修改在这里 =====
+      // 如果访问的是根路径，就执行随机重定向
+      if (url.pathname === '/') {
+        // 从 redirectUrls 数组中随机选择一个 URL
+        const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+        const targetUrl = redirectUrls[randomIndex];
+        // 返回一个 302 临时重定向响应
+        return Response.redirect(targetUrl, 302);
+      }
+      // ===== 修改结束 =====
+
+      // 对于非根路径的 HTTP 请求，保留原来的逻辑	      
         switch (url.pathname) {
           case `/${userID}`: {
             const vlessConfig = getvlessConfig(
