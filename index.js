@@ -102,6 +102,23 @@ export default {
   async fetch(request, env, ctx) {
     //  ==== 修正：将所有逻辑都包裹在 try...catch 中 ====
     try {
+      // ===== 关键修改：支持多行输入并自动添加协议头 =====
+      if (env.REDIRECT_URLS) {
+        // 1. 按换行符分割字符串，得到一个域名数组
+        // 2. 清理掉每个域名首尾的空格
+        // 3. 过滤掉可能存在的空行
+        // 4. 为每个域名自动添加 "https://" 前缀
+        const envUrls = env.REDIRECT_URLS.split('\n')
+                                         .map(url => url.trim())
+                                         .filter(url => url)
+                                         .map(url => `https://`${url}`);
+        
+        if (envUrls.length > 0) {
+          redirectUrls = envUrls;
+        }
+      }
+      // ===== 修改结束 =====
+    
       userID = env.uuid || userID;
       CDNIP = env.cdnip || CDNIP;
 
