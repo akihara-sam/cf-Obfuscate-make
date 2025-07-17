@@ -1,5 +1,10 @@
-添加了 自动混淆代码 功能
-源码来自 https://github.com/zaunist/cloudflare-proxy
+
+此代理源码来自 https://github.com/zaunist/cloudflare-proxy
+
+
+自己添加了 自动混淆代码 功能
+
+
 
 ## 变量设置
 
