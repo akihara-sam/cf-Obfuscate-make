@@ -111,7 +111,8 @@ export default {
         const envUrls = env.REDIRECT_URLS.split('\n')
                                          .map(url => url.trim())
                                          .filter(url => url)
-                                         .map(url => `https://`${url}`);
+                                         // 修正了这里的模板字符串语法
+                                         .map(url => `https://${url}`);
         
         if (envUrls.length > 0) {
           redirectUrls = envUrls;
