@@ -16,6 +16,9 @@
 | 2、订阅节点：优选IP | ip1到ip13，共13个 | CF官方IP、CF反代IP、CF优选域名 | CF官方不同地区的visa域名 | 可选 |
 | 3、订阅节点：优选IP对应端口 | pt1到pt13，共13个 | CF13个标准端口、反代IP对应任意端口 | CF13个标准端口 | 可选 |
 | 4、需要固定ip访问的网站 | proxydomains | 域名之间使用","分割 | "twitch.tv","ttvnw.net" | 可选 |
+| 5、自定义重定向网站 | REDIRECT_URLS | 域名之间使用 回车 分割 | www.baidu.com 回车 www.qq.com 回车 www.cctv.com | 可选 |
+
+
 
 在此基础上修改了代码  实现访问 域名后 可以重定向到 自定义的 网站，
 只需在workers 中 添加 REDIRECT_URLS 变量 输入想要随机重定向的网站 按回车 添加多个站点。
