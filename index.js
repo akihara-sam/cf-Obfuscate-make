@@ -695,7 +695,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader) {
 function getvlessConfig(userID, hostName) {
   const wvlessws = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#${hostName}`;
   const pvlesswstls = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2560#${hostName}`;
-  const note = `阿杰鲁博客地址：https://ajie.lu\n阿杰鲁YouTube频道：https://www.youtube.com/@zaunist\n阿杰鲁TG电报群组：https://t.me/zaunist\n\nProxyIP使用nat64自动生成，无需设置，也不能设置`;
+  const note = `代码经 秋原🌈Sam 修改\n\nProxyIP使用nat64自动生成，无需设置，也不能设置`;
   const ty = `https://${hostName}/${userID}/ty`;
   const cl = `https://${hostName}/${userID}/cl`;
   const sb = `https://${hostName}/${userID}/sb`;
